@@ -21,8 +21,5 @@ jobs:
 
     - name: Install Cloud Foundry CLI
       run: |
-       curl -L "https://packages.cloudfoundry.org/stable?release=macosx64-binary&version=6.5.3" -o cf-cli.tgz
-       gunzip cf-cli.tgz
-       tar -xvf cf-cli.tar
-       mv cf /usr/local/bin/cf
+       brew install cloudfoundry/tap/cf-cli@6
        cf --version
