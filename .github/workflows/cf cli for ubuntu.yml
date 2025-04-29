@@ -1,0 +1,17 @@
+name: Install Cloud Foundry CLI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  install-cf-cli:
+    runs-on: Ubuntu-latest
+
+    steps:
+     - name: Install Cloud Foundry CLI
+       run: |
+        curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&source=github&version=v6" | tar -zx
+        mv cf /usr/local/bin
+        cf version
