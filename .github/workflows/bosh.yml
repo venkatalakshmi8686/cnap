@@ -1,0 +1,45 @@
+name: test automation
+  
+on:
+  workflow_dispatch:
+    inputs:
+      boshdirectorname:
+        description: 'Enter bosh director name'
+        required: true
+        type: string
+jobs:
+  boshdirectorcleanup:
+    runs-on: [comcast-ubuntu-latest]
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: us-east-1
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4    
+      - name: Install yq
+        run: |
+          sudo apt update -y && sudo apt install curl -y &&
+          curl -s -L https://github.com/mikefarah/yq/releases/download/v4.13.4/yq_linux_amd64 -o yq
+          sudo install -o root -g root -m 0755 yq /usr/local/bin/yq
+          yq --version
+      - name: Install bosh-cli
+        run: |
+          wget https://github.com/cloudfoundry/bosh-cli/releases/download/v7.9.5/bosh-cli-7.9.5-linux-amd64
+          chmod +x ./bosh-cli-7.9.5-linux-amd64
+          sudo mv ./bosh-cli-7.9.5-linux-amd64 /usr/local/bin/bosh
+          bosh -v
+      - name: Read Vault secrets
+        uses: hashicorp/vault-action@v2
+        with:
+          url: ${{ secrets.VAULT_ADDR }}
+          method: approle
+          roleId: ${{ secrets.VAULT_ROLE_ID }}
+          secretId: ${{ secrets.VAULT_SECRET_ID }}
+          exportToken: true
+          secrets:
+            kv2/data/apa/service-accounts/svc-apeks AWS_ACCESS_KEY_ID | AWS_ACCESS_KEY_ID ;
+            kv2/data/apa/service-accounts/svc-apeks AWS_SECRET_ACCESS_KEY | AWS_SECRET_ACCESS_KEY ;
